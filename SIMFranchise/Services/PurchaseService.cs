@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SIMFranchise.Data;
 using SIMFranchise.DTOs.Purchase;
-using SIMFranchise.Interfaces;
+using SIMFranchise.Interfaces.Purchase;
 using SIMFranchise.Models;
 
 namespace SIMFranchise.Services
@@ -117,6 +117,49 @@ namespace SIMFranchise.Services
                 await transaction.RollbackAsync();
                 return false;
             }
+        }
+        public async Task<IEnumerable<PurchaseHistoryDto>> GetPurchaseHistoryAsync(int franchiseId, DateTime fromDate, DateTime toDate)
+        {
+            var start = DateOnly.FromDateTime(fromDate);
+            var end = DateOnly.FromDateTime(toDate);
+
+            // 1. Pehle database se raw purchases mangwayein Company ke data ke sath
+            var purchases = await _context.Purchases
+                .Where(p => p.FranchiseId == franchiseId &&
+                            p.PurchaseDate >= start &&
+                            p.PurchaseDate <= end)
+                .OrderByDescending(p => p.PurchaseDate)
+                .ToListAsync();
+
+            // Companies ki list (Names ke liye)
+            var companies = await _context.Companies.ToDictionaryAsync(c => c.Id, c => c.Name);
+
+            var historyList = new List<PurchaseHistoryDto>();
+
+            // 2. Data ko DTO mein map karein aur Product ka naam banayein
+            foreach (var p in purchases)
+            {
+                string compName = companies.ContainsKey(p.CompanyId) ? companies[p.CompanyId] : "Unknown";
+                string prodName = $"{compName} {p.ProductType}"; // Default name (e.g., "Jazz LOAD")
+
+                // Agar aap chahein to yahan SimProducts ya CardProducts se exact naam bhi nikaal sakte hain
+                // Abhi ke liye hum Company + Type ko use kar rahe hain jo sab se best hai
+
+                historyList.Add(item: new PurchaseHistoryDto
+                {
+                    Id = p.Id,
+                    CompanyId = p.CompanyId,
+                    CompanyName = compName,
+                    ProductType = p.ProductType!,
+                    ProductId = p.ProductId,
+                    ProductName = prodName,
+                    Quantity = p.Quantity,
+                    TotalAmount = p.TotalAmount,
+                    PurchaseDate = p.PurchaseDate
+                });
+            }
+
+            return historyList;
         }
     }
 }

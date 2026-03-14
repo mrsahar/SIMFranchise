@@ -4,6 +4,7 @@ using SIMFranchise.Data;
 using SIMFranchise.Interfaces;
 using SIMFranchise.Interfaces.Dashboard;
 using SIMFranchise.Interfaces.Inventory;
+using SIMFranchise.Interfaces.Purchase;
 using SIMFranchise.Mappings;
 using SIMFranchise.Middlewares.SIMFranchise.Middlewares;
 using SIMFranchise.Services;

@@ -98,6 +98,51 @@ namespace SIMFranchise.Services.HR
             member.BaseSalary = dto.BaseSalary;
 
             return await _context.SaveChangesAsync() > 0;
+        } 
+        public async Task<IEnumerable<TeamListDto>> GetTeamsByFranchiseAsync(int franchiseId)
+            {
+                return await _context.Teams
+                    .Where(t => t.FranchiseId == franchiseId && t.IsActive == true)
+                    .Select(t => new TeamListDto
+                    {
+                        Id = t.Id,
+                        Name = t.Name,
+                        Responsibility = t.Responsibility
+                    })
+                    .ToListAsync();
+            }
+
+            public async Task<IEnumerable<MemberListDto>> GetMembersByFranchiseAsync(int franchiseId)
+            {
+                // Member ka direct Franchise se link nahi hai, balkay Team ke zariye hai
+                return await _context.TeamMembers
+                    .Include(m => m.Team)
+                    .Where(m => m.Team.FranchiseId == franchiseId && m.IsActive == true)
+                    .Select(m => new MemberListDto
+                    {
+                        Id = m.Id,
+                        TeamId = m.TeamId,
+                        TeamName = m.Team.Name,
+                        Name = m.Name,
+                        IsActive = m.IsActive ?? false
+                    })
+                    .ToListAsync();
+            }
+
+            public async Task<IEnumerable<UserListDto>> GetUsersByFranchiseAsync(int franchiseId)
+            {
+                return await _context.Users
+                    .Include(u => u.Role)
+                    .Where(u => u.FranchiseId == franchiseId)
+                    .Select(u => new UserListDto
+                    {
+                        Name = u.Name,
+                        Email = u.Email,
+                        RoleId = u.RoleId,
+                        RoleName = u.Role.Name,
+                        IsActive = u.IsActive ?? false
+                    })
+                    .ToListAsync();
+            }
         }
-    }
 }

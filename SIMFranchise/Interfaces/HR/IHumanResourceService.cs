@@ -23,5 +23,10 @@ namespace SIMFranchise.Interfaces
         // Team Member Management
         Task<bool> AddMemberToTeamAsync(TeamMemberCreateDto dto);
         Task<bool> UpdateMemberAsync(int id, TeamMemberCreateDto dto);
+
+
+        Task<IEnumerable<TeamListDto>> GetTeamsByFranchiseAsync(int franchiseId);
+        Task<IEnumerable<MemberListDto>> GetMembersByFranchiseAsync(int franchiseId);
+        Task<IEnumerable<UserListDto>> GetUsersByFranchiseAsync(int franchiseId);
     }
 }

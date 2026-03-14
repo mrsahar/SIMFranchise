@@ -103,5 +103,25 @@ namespace SIMFranchise.Controllers
             if (!success) return NotFound(ApiResponse<string>.FailureResponse("Member not found."));
             return Ok(ApiResponse<string>.SuccessResponse(null, "Member details updated successfully."));
         }
+        [HttpGet("teams/{franchiseId}")]
+        public async Task<IActionResult> GetTeams(int franchiseId)
+        {
+            var teams = await _hrService.GetTeamsByFranchiseAsync(franchiseId);
+            return Ok(ApiResponse<IEnumerable<TeamListDto>>.SuccessResponse(teams, "Teams fetched successfully."));
+        }
+
+        [HttpGet("members/{franchiseId}")]
+        public async Task<IActionResult> GetMembers(int franchiseId)
+        {
+            var members = await _hrService.GetMembersByFranchiseAsync(franchiseId);
+            return Ok(ApiResponse<IEnumerable<MemberListDto>>.SuccessResponse(members, "Members fetched successfully."));
+        }
+
+        [HttpGet("users/{franchiseId}")]
+        public async Task<IActionResult> GetUsers(int franchiseId)
+        {
+            var users = await _hrService.GetUsersByFranchiseAsync(franchiseId);
+            return Ok(ApiResponse<IEnumerable<UserListDto>>.SuccessResponse(users, "Users fetched successfully."));
+        }
     }
 }
