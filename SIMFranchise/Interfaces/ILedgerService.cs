@@ -9,6 +9,7 @@ using SIMFranchise.DTOs.Ledger;
             Task<decimal> GetAccountBalanceAsync(int franchiseId, string accountType);
             Task<LedgerBalanceDto> GetFranchiseSummaryAsync(int franchiseId); 
             Task<bool> WithdrawAsync(LedgerWithdrawDto dto);
-    }
+            Task<IEnumerable<LedgerHistoryDto>> GetLedgerHistoryAsync(int franchiseId, DateTime fromDate, DateTime toDate);
+        }
 
     }

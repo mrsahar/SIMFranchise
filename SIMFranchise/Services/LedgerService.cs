@@ -3,7 +3,7 @@ using SIMFranchise.Data;
 using SIMFranchise.DTOs.Ledger;
 using SIMFranchise.DTOs.LedgerTransaction;
 using SIMFranchise.Interfaces;
-using SIMFranchise.Models; 
+using SIMFranchise.Models;
 
 namespace SIMFranchise.Services
 {
@@ -147,6 +147,33 @@ namespace SIMFranchise.Services
                 await transaction.RollbackAsync(); // Agar koi error aaya to wapas purani halat mein le jao
                 return false;
             }
+
+        }
+
+        public async Task<IEnumerable<LedgerHistoryDto>> GetLedgerHistoryAsync(int franchiseId, DateTime fromDate, DateTime toDate)
+        {
+            var start = DateOnly.FromDateTime(fromDate);
+            var end = DateOnly.FromDateTime(toDate);
+
+            var history = await _context.LedgerTransactions
+                .Where(l => l.FranchiseId == franchiseId &&
+                            l.TxnDate >= start &&
+                            l.TxnDate <= end)
+                .OrderByDescending(l => l.TxnDate)
+                .ThenByDescending(l => l.Id) // Taake aaj ki latest entry sab se ooper aaye
+                .Select(l => new LedgerHistoryDto
+                {
+                    Id = l.Id,
+                    AccountType = l.AccountType,
+                    Direction = l.Direction,
+                    Amount = l.Amount,
+                    Source = l.Source,
+                    TxnDate = l.TxnDate,
+                    Note = l.Note
+                })
+                .ToListAsync();
+
+            return history;
         }
     }
 }

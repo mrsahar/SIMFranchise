@@ -28,5 +28,6 @@ namespace SIMFranchise.Interfaces
         Task<IEnumerable<TeamListDto>> GetTeamsByFranchiseAsync(int franchiseId);
         Task<IEnumerable<MemberListDto>> GetMembersByFranchiseAsync(int franchiseId);
         Task<IEnumerable<UserListDto>> GetUsersByFranchiseAsync(int franchiseId);
+
     }
 }

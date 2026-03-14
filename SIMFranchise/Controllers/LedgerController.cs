@@ -75,5 +75,29 @@ namespace SIMFranchise.Controllers
                 }
             }
 
+            [HttpGet("history/{franchiseId}")]
+            public async Task<IActionResult> GetLedgerHistory(int franchiseId, [FromQuery] DateTime from, [FromQuery] DateTime to)
+            {
+                try
+                {
+                    // Agar Manager ne koi date nahi bheji, to default pichle 30 din ka record dikhayein
+                    if (from == DateTime.MinValue) from = DateTime.Now.AddDays(-30);
+                    if (to == DateTime.MinValue) to = DateTime.Now;
+
+                    var history = await _ledgerService.GetLedgerHistoryAsync(franchiseId, from, to);
+
+                    if (history == null || !history.Any())
+                    {
+                        return Ok(ApiResponse<IEnumerable<LedgerHistoryDto>>.SuccessResponse(new List<LedgerHistoryDto>(), "No ledger history found for this period."));
+                    }
+
+                    return Ok(ApiResponse<IEnumerable<LedgerHistoryDto>>.SuccessResponse(history, "Ledger history retrieved successfully."));
+                }
+                catch (Exception ex)
+                {
+                    return StatusCode(500, ApiResponse<string>.FailureResponse($"Error retrieving ledger history: {ex.Message}"));
+                }
         }
+
+    }
 }
