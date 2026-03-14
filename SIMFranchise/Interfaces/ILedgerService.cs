@@ -7,6 +7,8 @@ using SIMFranchise.DTOs.Ledger;
         {
             Task<bool> AddInitialBalanceAsync(LedgerCreateDto dto);
             Task<decimal> GetAccountBalanceAsync(int franchiseId, string accountType);
-            Task<LedgerBalanceDto> GetFranchiseSummaryAsync(int franchiseId);
+            Task<LedgerBalanceDto> GetFranchiseSummaryAsync(int franchiseId); 
+            Task<bool> WithdrawAsync(LedgerWithdrawDto dto);
     }
+
     }

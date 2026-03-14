@@ -32,7 +32,7 @@ namespace SIMFranchise.Services
         // Nayi Entry (Investment/Deposit) karne ke liye
         public async Task<bool> AddInitialBalanceAsync(LedgerCreateDto dto)
         {
-            // 1. Transaction Shuru karein 🛡️
+            // 1. Transaction Shuru karein  
             using var transaction = await _context.Database.BeginTransactionAsync();
 
             try
@@ -50,7 +50,7 @@ namespace SIMFranchise.Services
                 };
                 _context.LedgerTransactions.Add(ledgerEntry);
 
-                // B. AccountBalance table update karein 📈
+                // B. AccountBalance table update karein 
                 var balance = await _context.AccountBalances
                     .FirstOrDefaultAsync(b => b.FranchiseId == dto.FranchiseId && b.AccountType == dto.AccountType.ToUpper());
 
@@ -99,6 +99,54 @@ namespace SIMFranchise.Services
                 CashBalance = balances.FirstOrDefault(b => b.AccountType == "CASH")?.CurrentBalance ?? 0,
                 BankBalance = balances.FirstOrDefault(b => b.AccountType == "BANK")?.CurrentBalance ?? 0
             };
+        }
+        public async Task<bool> WithdrawAsync(LedgerWithdrawDto dto)
+        {
+            // Transaction shuru kar rahe hain taake agar darmiyan mein error aaye to sab rollback ho jaye
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                // 1. Account ka mojooda balance check karein
+                var balance = await _context.AccountBalances
+                    .FirstOrDefaultAsync(b => b.FranchiseId == dto.FranchiseId &&
+                                              b.AccountType == dto.AccountType.ToUpper());
+
+                // Agar account nahi mila ya paise kam hain, to False return kar do
+                if (balance == null || balance.CurrentBalance < dto.Amount)
+                {
+                    return false;
+                }
+
+                // 2. Balance mein se paise minus karein
+                balance.CurrentBalance -= dto.Amount;
+                balance.LastUpdated = DateTime.Now;
+
+                // 3. Ledger mein entry record karein ke paise kahan gaye (Direction = "OUT")
+                var ledgerEntry = new LedgerTransaction
+                {
+                    FranchiseId = dto.FranchiseId,
+                    AccountType = dto.AccountType.ToUpper(),
+                    Direction = "OUT", // Yahan OUT hoga kyunki paise nikal rahe hain
+                    Amount = dto.Amount,
+                    Source = "WITHDRAWAL",
+                    TxnDate = DateOnly.FromDateTime(DateTime.Now),
+                    Note = dto.Note
+                };
+
+                _context.LedgerTransactions.Add(ledgerEntry);
+
+                // 4. Sab kuch database mein save karein
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync(); // Transaction successful!
+
+                return true;
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync(); // Agar koi error aaya to wapas purani halat mein le jao
+                return false;
+            }
         }
     }
 }
