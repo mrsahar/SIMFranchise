@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc; 
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc; 
 using SIMFranchise.DTOs.Product;
 using SIMFranchise.Interfaces;
 using SIMFranchise.Wrappers;
 
 namespace SIMFranchise.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class SimProductController : ControllerBase
